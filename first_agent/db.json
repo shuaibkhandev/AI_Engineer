@@ -1,0 +1,20 @@
+{
+  "expenses": [
+    {
+      "name": "iphone",
+      "amount": 500
+    },
+    {
+      "name": "charger",
+      "amount": 200
+    },
+    {
+      "name": "laptop mackbook",
+      "amount": 1000
+    },
+    {
+      "name": "shopping",
+      "amount": 500
+    }
+  ]
+}

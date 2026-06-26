@@ -1,6 +1,6 @@
 {
   "name": "first_agent",
-  "module": "agent.ts",
+  "module": "index.ts",
   "type": "module",
   "private": true,
   "devDependencies": {

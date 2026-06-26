@@ -1,15 +1,23 @@
 import dotenv from "dotenv";
 dotenv.config();
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 
-const client = new OpenAI({
-    apiKey: process.env.GROQ_API_KEY,
-    baseURL: "https://api.groq.com/openai/v1",
-});
 
-const response = await client.responses.create({
+const groq = new Groq({apiKey:process.env.GROQ_API_KEY});
+async function main() {
+  const completion = await groq.chat.completions.create({
     model: "openai/gpt-oss-20b",
-    input: "Hey",
-});
-
-console.log(response.output_text);
+    messages: [
+        {
+            role: "system",
+            content: "### You are Shuaib_AI, a JavaScript language teacher ###"
+        },
+      {
+        role: "user",
+        content: "Who are you?",
+      },
+    ],
+  });
+  console.log(completion.choices[0]?.message?.content);
+}
+main().catch(console.error);

@@ -6,6 +6,9 @@ import Groq from "groq-sdk";
 const groq = new Groq({apiKey:process.env.GROQ_API_KEY});
 async function main() {
   const completion = await groq.chat.completions.create({
+    temperature:1,
+    // top_p:0.2, alternative of temperature
+    max_completion_tokens:100,
     model: "openai/gpt-oss-20b",
     messages: [
         {

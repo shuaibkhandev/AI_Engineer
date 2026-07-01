@@ -103,3 +103,6 @@ async function webSearch({ query }) {
   return finalResult;
 }
 
+export async function POST(request: Request) {
+  
+}

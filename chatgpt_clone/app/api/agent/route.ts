@@ -1,5 +1,6 @@
 import Groq from "groq-sdk";
 import { tavily } from "@tavily/core";
+const NodeCache = require("node-cache");
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
@@ -8,6 +9,8 @@ const groq = new Groq({
 const tvly = tavily({
   apiKey: process.env.TAVILY_API_KEY!,
 });
+
+const cache = new NodeCache({ ttl: 60 * 60 * 24 });
 
 async function webSearch({ query }: { query: string }) {
   console.log("Web Searching");
@@ -19,9 +22,16 @@ async function webSearch({ query }: { query: string }) {
 
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
+    const { message, conversationId } = await request.json();
 
-    const messages: any[] = [
+    if (!message || !conversationId) {
+      return Response.json(
+        { success: false, response: "All fileds are required." },
+        { status: 400 },
+      );
+    }
+
+    const baseMessage: any[] = [
       {
         role: "system",
         content: `You are a smart personal assistant who answers the asked questions. only answer to the point.
@@ -30,14 +40,32 @@ export async function POST(request: Request) {
         current datetime: ${new Date().toUTCString()}
         `,
       },
-      {
-        role: "user",
-        content: message,
-      },
     ];
+
+    const messages: any[] = cache.get(conversationId) ?? baseMessage;
+    
+    messages.push({
+      role: "user",
+      content: message,
+    });
+
+    const Max_call = 10;
+    let count = 0;
 
     while (true) {
       console.log("🤖 Calling Groq...");
+    count++;
+      if(count > Max_call){
+        return Response.json(
+    {
+      success: false,
+      response: "I could not find the solution, please try again.",
+    },
+    { status: 500 },
+  );
+      }
+
+  
 
       const completion = await groq.chat.completions.create({
         model: "openai/gpt-oss-20b",
@@ -71,6 +99,8 @@ export async function POST(request: Request) {
       messages.push(assistantMessage);
 
       if (!assistantMessage.tool_calls) {
+        cache.set(conversationId, messages)
+        console.log(cache)
         return Response.json({
           success: true,
           response: assistantMessage.content,

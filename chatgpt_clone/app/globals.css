@@ -24,3 +24,24 @@ body {
   color: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track (background) */
+::-webkit-scrollbar-track {
+  background: #212121;
+}
+
+/* Thumb (draggable part) */
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 9999px;
+}
+
+/* Hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}

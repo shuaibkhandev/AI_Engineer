@@ -15,3 +15,8 @@
  * DONE
  * 
  */
+
+import { indexTheDocument } from "./prepare";
+
+const filePath = "./company_information.pdf"
+await indexTheDocument(filePath);

@@ -18,12 +18,12 @@ export default function Message({ role, content }: MessageProps) {
       >
         {/* Avatar */}
     <div
-  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold text-white ${
+  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold text-white shadow-lg ${
     isUser
-      ? "bg-blue-600"
+      ? "bg-gradient-to-br from-indigo-500 to-purple-600"
       : isError
-      ? "bg-red-600"
-      : "bg-black"
+      ? "bg-gradient-to-br from-red-500 to-red-600"
+      : "bg-gradient-to-br from-zinc-700 to-zinc-800 border border-white/10"
   }`}
 >
   {isUser ? "U" : isError ? "!" : "AI"}
@@ -31,12 +31,12 @@ export default function Message({ role, content }: MessageProps) {
 
         {/* Message Bubble */}
 <div
-  className={`rounded-2xl px-4 py-3 ${
+  className={`rounded-2xl px-5 py-3.5 shadow-sm leading-relaxed ${
     isUser
-      ? "bg-blue-600 text-white"
+      ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-br-sm"
       : isError
-      ? "bg-red-100 text-red-700 border border-red-300"
-      : "bg-zinc-100 text-zinc-900"
+      ? "bg-red-900/30 text-red-400 border border-red-900/50 rounded-bl-sm"
+      : "bg-zinc-900/80 border border-white/5 text-zinc-100 rounded-bl-sm backdrop-blur-sm"
   }`}
 >
   {content}

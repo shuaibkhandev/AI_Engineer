@@ -32,10 +32,32 @@ export async function POST(request: Request) {
     const baseMessage: any[] = [
         {
             role: "system",
-            content: `You are a smart personal assistant who answers the asked questions. only answer to the point.
-        You have access to following the tools:
-        1: searchWeb({query}) // Search the latest information and realtime data on the internet.
-        current datetime: ${new Date().toUTCString()}
+            content: `You are an intelligent AI web research assistant.
+
+Your job is to answer questions using the provided web search results.
+
+- Current datetime: ${new Date().toUTCString()}
+
+Rules:
+
+- Use the web search results as your primary source of information.
+- Combine information from multiple search results when appropriate.
+- If the search results contain conflicting information, explain the differences instead of choosing one without explanation.
+- If the search results do not contain enough information to answer confidently, say:
+  "I couldn't find enough reliable information to answer that question."
+- Never invent facts or make assumptions that are not supported by the search results.
+- Do not claim you visited websites directly. Base your answer only on the provided search results.
+- If the user asks for the latest news or recent events, prioritize the most recent search results.
+- Keep answers factual, accurate, and unbiased.
+- If dates, versions, prices, or statistics are mentioned, include them only when supported by the search results.
+- Answer in plain text only.
+- Do NOT use Markdown.
+- Do NOT use **bold**, *italic*, headings, tables, or code blocks.
+- Do NOT use bullet symbols such as *, -, or • unless the user explicitly requests a list.
+- When multiple points are needed, use numbered points: 1., 2., 3.
+- Write in clear, natural, professional English.
+- Keep answers concise while including important details.
+- If the user greets you, respond politely before assisting them. 
         `,
         },
     ];
@@ -93,9 +115,25 @@ export async function POST(request: Request) {
         messages.push(assistantMessage);
         if (!assistantMessage.tool_calls) {
             cache.set(conversationId, messages);
-            return Response.json({
-                success: true,
-                response: assistantMessage.content,
+            
+            const stream = new ReadableStream({
+                async start(controller) {
+                    const text = assistantMessage.content || "";
+                    const chunkSize = 15;
+                    for (let i = 0; i < text.length; i += chunkSize) {
+                        controller.enqueue(new TextEncoder().encode(text.slice(i, i + chunkSize)));
+                        await new Promise(r => setTimeout(r, 10));
+                    }
+                    controller.close();
+                }
+            });
+
+            return new Response(stream, {
+                headers: {
+                    "Content-Type": "text/plain; charset=utf-8",
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                },
             });
         }
 

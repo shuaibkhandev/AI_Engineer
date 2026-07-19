@@ -57,6 +57,10 @@ export default function Chat() {
     }
   }
 
+  function handleSuggestionClick(text: string) {
+    handleSend(text);
+  }
+
   async function handleSend(message: string) {
     if (!message.trim() || isLoading) return;
 
@@ -72,36 +76,37 @@ export default function Chat() {
     setUserMessage("");
     setIsLoading(true);
     try {
+      let response;
       if (mode === "web") {
-        const data = await sendWebSearchMessage(message, cId);
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: data.response || "No response",
-          },
-        ]);
+        response = await sendWebSearchMessage(message, cId);
       } else if (mode === "rag") {
-        const data = await sendRagMessage(message, cId);
-        console.log(data, 'sdfsdf');
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: data.response || "No response",
-          },
-        ]);
+        response = await sendRagMessage(message, cId);
       } else {
-        const data = await sendGeneralMessage(message, cId);
+        response = await sendGeneralMessage(message, cId);
+      }
 
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: data.response || "No response",
-          },
-        ]);
+      if (!response.body) throw new Error("No response body");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "" },
+      ]);
+
+      let done = false;
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            newMessages[newMessages.length - 1].content += chunk;
+            return newMessages;
+          });
+        }
       }
     } catch (error) {
       console.log(error);
@@ -137,7 +142,12 @@ export default function Chat() {
         <Header />
 
         {/* Messages */}
-        <MessageList messages={messages} isLoading={isLoading} />
+        <MessageList
+          messages={messages}
+          isLoading={isLoading}
+          mode={mode}
+          onSuggestionClick={handleSuggestionClick}
+        />
 
         {/* Input */}
         <PromptInput

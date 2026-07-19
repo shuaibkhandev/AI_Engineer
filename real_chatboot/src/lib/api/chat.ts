@@ -11,7 +11,7 @@ export async function sendGeneralMessage(message: string, conversationId: string
     throw new Error("Failed to send message");
   }
 
-  return response.json();
+  return response;
 }
 
 
@@ -28,7 +28,7 @@ export async function sendWebSearchMessage(message: string, conversationId: stri
     throw new Error("Failed to send message");
   }
 
-  return response.json();
+  return response;
 }
 
 export async function sendRagMessage(question: string, conversationId: string) {
@@ -44,5 +44,5 @@ export async function sendRagMessage(question: string, conversationId: string) {
     throw new Error("Failed to send message");
   }
 
-  return response.json();
+  return response;
 }

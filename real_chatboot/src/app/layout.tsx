@@ -24,7 +24,7 @@ export default function RootLayout({
       lang="en"
       className={`${roboto.variable} h-full antialiased`}
     >
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

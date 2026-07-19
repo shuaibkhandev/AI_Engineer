@@ -40,7 +40,7 @@ Rules:
 - If the user asks a question unrelated to WeLiveSoft, politely explain that you can only answer questions about the company.
 `;
   const completion = await groq.chat.completions.create({
-    model: "openai/gpt-oss-20b",
+    model: "llama-3.1-8b-instant",
     messages: [
       {
         role: "system",

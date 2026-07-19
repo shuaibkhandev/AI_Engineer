@@ -5,7 +5,7 @@ import Header from "./Header";
 import MessageList from "./MessageList";
 import PromptInput from "./PromptInput";
 import { sendGeneralMessage, sendWebSearchMessage, sendRagMessage } from "@/lib/api/chat";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Message = {
   role: "user" | "assistant" | "error";
@@ -26,9 +26,13 @@ export default function Chat() {
   const [mode, setMode] = useState<"general" | "web" | "rag">("general");
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
 
+  // Typewriter buffer — holds characters not yet displayed
+  const bufferRef = useRef<string>("");
+  const typewriterRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
-    setCId(Math.random().toString(36).substring(2))
-  }, [])
+    setCId(Math.random().toString(36).substring(2));
+  }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -37,13 +41,45 @@ export default function Chat() {
         if (existing) {
           return prev.map(c => c.id === cId ? { ...c, messages } : c);
         } else {
-          return [{ id: cId, title: messages[0].content.substring(0, 30) + (messages[0].content.length > 30 ? "..." : ""), messages }, ...prev];
+          return [{
+            id: cId,
+            title: messages[0].content.substring(0, 30) + (messages[0].content.length > 30 ? "..." : ""),
+            messages,
+          }, ...prev];
         }
       });
     }
   }, [messages, cId]);
 
+  function startTypewriter() {
+    if (typewriterRef.current) return; // already running
+    typewriterRef.current = setInterval(() => {
+      if (bufferRef.current.length === 0) return;
+      // Drip up to 3 characters per tick for a smooth, natural pace
+      const chars = bufferRef.current.slice(0, 3);
+      bufferRef.current = bufferRef.current.slice(3);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const last = newMessages[newMessages.length - 1];
+        newMessages[newMessages.length - 1] = {
+          ...last,
+          content: last.content + chars,
+        };
+        return newMessages;
+      });
+    }, 18);
+  }
+
+  function stopTypewriter() {
+    if (typewriterRef.current) {
+      clearInterval(typewriterRef.current);
+      typewriterRef.current = null;
+    }
+  }
+
   function handleNewChat() {
+    stopTypewriter();
+    bufferRef.current = "";
     setMessages([]);
     setUserMessage("");
     setCId(Math.random().toString(36).substring(2));
@@ -64,17 +100,18 @@ export default function Chat() {
   async function handleSend(message: string) {
     if (!message.trim() || isLoading) return;
 
+    stopTypewriter();
+    bufferRef.current = "";
+
     const updatedMessages: Message[] = [
       ...messages,
-      {
-        role: "user",
-        content: message,
-      },
+      { role: "user", content: message },
     ];
 
     setMessages(updatedMessages);
     setUserMessage("");
     setIsLoading(true);
+
     try {
       let response;
       if (mode === "web") {
@@ -90,41 +127,45 @@ export default function Chat() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "" },
-      ]);
+      // Add empty assistant placeholder
+      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+
+      // Start the typewriter drip
+      startTypewriter();
 
       let done = false;
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         done = readerDone;
         if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1].content += chunk;
-            return newMessages;
-          });
+          // Push raw chunk into buffer — typewriter reveals it gradually
+          bufferRef.current += decoder.decode(value, { stream: true });
         }
       }
+
+      // Wait until the buffer is fully drained before finishing
+      await new Promise<void>(resolve => {
+        const check = setInterval(() => {
+          if (bufferRef.current.length === 0) {
+            clearInterval(check);
+            resolve();
+          }
+        }, 50);
+      });
+
+      stopTypewriter();
     } catch (error) {
       console.log(error);
-      setMessages((prev) => [
+      stopTypewriter();
+      bufferRef.current = "";
+      setMessages(prev => [
         ...prev,
-        {
-          role: "error",
-          content: "⚠️ Sorry, something went wrong. Please try again.",
-        },
+        { role: "error", content: "⚠️ Sorry, something went wrong. Please try again." },
       ]);
     } finally {
       setIsLoading(false);
     }
   }
-
-
-
-
 
   return (
     <main className="flex h-screen bg-zinc-950 text-zinc-100">
@@ -139,7 +180,7 @@ export default function Chat() {
       {/* Chat Area */}
       <section className="flex flex-1 flex-col bg-zinc-950">
         {/* Header */}
-        <Header />
+        <Header mode={mode} />
 
         {/* Messages */}
         <MessageList

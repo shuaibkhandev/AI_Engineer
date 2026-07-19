@@ -85,7 +85,7 @@ Rules:
         }
 
         const completion = await groq.chat.completions.create({
-            model: "openai/gpt-oss-20b",
+            model: "llama-3.1-8b-instant",
             temperature: 0,
             tools: [
                 {
@@ -115,7 +115,7 @@ Rules:
         messages.push(assistantMessage);
         if (!assistantMessage.tool_calls) {
             cache.set(conversationId, messages);
-            
+
             const stream = new ReadableStream({
                 async start(controller) {
                     const text = assistantMessage.content || "";

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import TypingIndicator from "./TypingIndicator";
 import Message from "./Message";
 import { Globe, Database, MessageCircle, Sparkles, Zap, BookOpen, Search, Building2 } from "lucide-react";
 
@@ -131,7 +132,21 @@ export default function MessageList({ messages, isLoading, mode, onSuggestionCli
               <Message key={index} role={message.role} content={message.content} />
             ))}
 
-            {isLoading && <Message role="assistant" content="Thinking..." />}
+            {isLoading && (
+              messages[messages.length - 1]?.role === "user" ||
+              messages[messages.length - 1]?.content === ""
+            ) && (
+              <div className="flex items-start gap-3">
+                {/* AI Avatar */}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 border border-white/10 font-semibold text-white shadow-lg text-sm">
+                  AI
+                </div>
+                {/* Animated bubble */}
+                <div className="rounded-2xl rounded-bl-sm bg-zinc-900/80 border border-white/5 px-5 py-3.5 shadow-sm backdrop-blur-sm">
+                  <TypingIndicator />
+                </div>
+              </div>
+            )}
 
             <div ref={bottomRef} />
           </div>

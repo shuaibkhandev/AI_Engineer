@@ -32,5 +32,3 @@ console.log("Assistant:",aiMsg.messages[aiMsg.messages.length-1].content);
 }
 
 main()
-
-console.log("SSSSSSSSSSSSSSSS")

@@ -1,0 +1,21 @@
+{
+  "name": "agent_with_langgarph",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/core": "^1.2.3",
+    "@langchain/groq": "^1.3.1",
+    "@langchain/langgraph": "^1.4.8",
+    "@langchain/tavily": "^1.2.0",
+    "dotenv": "^17.4.2",
+    "langchain": "^1.5.3"
+  }
+}

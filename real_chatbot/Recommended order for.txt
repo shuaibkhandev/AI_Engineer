@@ -1,0 +1,18 @@
+Recommended order for your project
+
+Since you're building your own ChatGPT clone, I'd suggest:
+
+✅ Chat UI
+✅ Message state
+✅ Loading state
+✅ Auto-scroll
+✅ Error handling
+⏭ Conversation history (send all messages)
+⏭ Streaming responses
+⏭ Local storage
+⏭ Multiple chats
+⏭ Database
+⏭ Authentication
+⏭ Long-term memory (RAG/vector store if desired)
+
+Memory is definitely a feature you'll want, but conversation history (sending previous messages with each request) should come before long-term memory. The former lets the AI stay coherent within a chat; the latter lets it remember information across different chats or sessions.

@@ -1,8 +1,11 @@
 import { ChatGroq } from "@langchain/groq"
 import { createEventsTool, getEventsTool } from "./tools";
+import { StateSchema, GraphNode, MessagesValue, StateGraph, START, END, type ConditionalEdgeRouter, MemorySaver } from "@langchain/langgraph";
+import { ToolNode } from "@langchain/langgraph/prebuilt";
+import { HumanMessage, AIMessage } from "@langchain/core/messages";
 
 
-
+const checkpointer = new MemorySaver();
 const tools = [createEventsTool, getEventsTool];
 
 const llm = new ChatGroq({
@@ -11,12 +14,68 @@ const llm = new ChatGroq({
 }).bindTools(tools);
 
 
-const aiMsg = await llm.invoke([
-    {
-      role: "system",
-      content: "You are a assistant.",
-    },
-    { role: "user", content: "I love programming." },
-])
+const MessagesState = new StateSchema({
+  messages: MessagesValue
+});
 
-console.log(aiMsg.content)
+/**
+ * Model Node 
+ */
+
+const llmCall: GraphNode<typeof MessagesState> = async (state) => {
+  const response = await llm.invoke(state.messages);
+  return {
+    messages: [response]
+  };
+};
+
+/**
+ * Tool Node
+ */
+
+const toolNode = new ToolNode(tools);
+
+
+/**
+ * Conditional Edge Function
+ */
+
+const shouldContinue: ConditionalEdgeRouter<typeof MessagesState, "toolNode"> = (state) => {
+  const lastMessage = state.messages.at(-1) as AIMessage;
+
+  // Check if it's an AIMessage before accessing tool_calls
+  if (!lastMessage || !AIMessage.isInstance(lastMessage)) {
+    return END;
+  }
+
+  // If the LLM makes a tool call, then perform an action
+  if (lastMessage.tool_calls?.length) {
+    return "toolNode";
+  }
+
+  // Otherwise, we stop (reply to the user)
+  return END;
+};
+
+
+/**
+ * Build the Graph
+ */
+
+const graph = new StateGraph(MessagesState)
+  .addNode("llmCall", llmCall)
+  .addNode("toolNode", toolNode)
+  .addEdge(START, "llmCall")
+  .addConditionalEdges("llmCall", shouldContinue, ["toolNode", END])
+  .addEdge("toolNode", "llmCall")
+
+  const agent = graph.compile({checkpointer});
+
+  // Invoke
+const result = await agent.invoke({
+  messages: [new HumanMessage("can you create meeting/event for me with shehzad?")],
+},{ configurable: { thread_id: "1" }});
+
+for (const message of result.messages) {
+  console.log(`[${message.type}]: ${message.text}`);
+}

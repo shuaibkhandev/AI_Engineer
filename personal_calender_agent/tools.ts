@@ -7,8 +7,12 @@ export const createEventsTool = tool(
   },
   {
     name: "create_events",
-    description: "Call to create the calendar events",
-    schema: z.object({}),
+    description:
+"Always call this tool whenever the user wants to create a calendar event, even if details are missing. Pass the entire user request in the query parameter.",
+    schema: z.object({
+            query: z.string(),
+
+    }),
   },
 );
 
@@ -22,6 +26,9 @@ export const getEventsTool = tool(
   {
     name: "get_events",
     description: "Call to get the calendar events",
-    schema: z.object({}),
+    schema: z.object({
+            query: z.string().describe("The user's request for retrieving calendar events"),
+
+    }),
   },
 );

@@ -8,6 +8,7 @@ import { HumanMessage, AIMessage } from "@langchain/core/messages";
 const checkpointer = new MemorySaver();
 const tools = [createEventsTool, getEventsTool];
 
+
 const llm = new ChatGroq({
     model: "openai/gpt-oss-120b",
     temperature: 0,
@@ -73,7 +74,7 @@ const graph = new StateGraph(MessagesState)
 
   // Invoke
 const result = await agent.invoke({
-  messages: [new HumanMessage("can you create meeting/event for me with shehzad?")],
+  messages: [new HumanMessage("Any meeting from Aug 5 to Aug 6")],
 },{ configurable: { thread_id: "1" }});
 
 for (const message of result.messages) {

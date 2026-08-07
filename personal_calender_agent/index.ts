@@ -3,10 +3,13 @@ import { createEventsTool, getEventsTool } from "./tools";
 import { StateSchema, GraphNode, MessagesValue, StateGraph, START, END, type ConditionalEdgeRouter, MemorySaver } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
-
+import readline from "node:readline/promises";
+import { stdin as input, stdout as output } from "node:process";
 
 const checkpointer = new MemorySaver();
 const tools = [createEventsTool, getEventsTool];
+
+
 
 
 const llm = new ChatGroq({
@@ -72,14 +75,34 @@ const graph = new StateGraph(MessagesState)
 
   const agent = graph.compile({checkpointer});
 
+
+    const rl = readline.createInterface({
+    input,
+    output,
+  });
+
+
+    while(true){
+
+        const prompt = await rl.question("You: ");
+
+    if (prompt.toLowerCase() === "exit") {
+      console.log("Goodbye 👋");
+      break;
+    }
+
   // Invoke
 const result = await agent.invoke({
-  messages: [new HumanMessage("any meeting availabel for tommorow ? timezone asia/karachi")],
+  messages: [new HumanMessage(prompt)],
 },{ configurable: { thread_id: "1" }});
 
 for (const message of result.messages) {
   console.log(`[${message.type}]: ${message.text}`);
   
 }
+
+}
+rl.close()
+
 
 // pleaes create a meeting with Shehzad his email is shezad@gmail.com. date : Aug 8 2026 and time 5AM timezone:  Asia/Karachi

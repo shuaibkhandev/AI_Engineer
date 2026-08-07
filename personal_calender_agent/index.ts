@@ -74,9 +74,12 @@ const graph = new StateGraph(MessagesState)
 
   // Invoke
 const result = await agent.invoke({
-  messages: [new HumanMessage("Any meeting from Aug 5 to Aug 6")],
+  messages: [new HumanMessage("any meeting availabel for tommorow ? timezone asia/karachi")],
 },{ configurable: { thread_id: "1" }});
 
 for (const message of result.messages) {
   console.log(`[${message.type}]: ${message.text}`);
+  
 }
+
+// pleaes create a meeting with Shehzad his email is shezad@gmail.com. date : Aug 8 2026 and time 5AM timezone:  Asia/Karachi

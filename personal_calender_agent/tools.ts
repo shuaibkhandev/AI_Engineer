@@ -88,7 +88,7 @@ const createEventSchema =  z.object({
       start: z.object({
         dateTime: z
           .string()
-          .describe("Start date and time in RFC3339 format."),
+          .describe("Start date and time in YYYY-MM-DDTHH:mm:ss format."),
 
         timezone: z
           .string()
@@ -98,7 +98,7 @@ const createEventSchema =  z.object({
       end: z.object({
         dateTime: z
           .string()
-          .describe("End date and time in RFC3339 format."),
+          .describe("End date and time in YYYY-MM-DDTHH:mm:ss format."),
 
         timezone: z
           .string()

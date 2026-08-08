@@ -2,7 +2,7 @@ import { ChatGroq } from "@langchain/groq"
 import { createEventsTool, getEventsTool } from "./tools";
 import { StateSchema, GraphNode, MessagesValue, StateGraph, START, END, type ConditionalEdgeRouter, MemorySaver } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
-import { HumanMessage, AIMessage } from "@langchain/core/messages";
+import { HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
@@ -91,9 +91,17 @@ const graph = new StateGraph(MessagesState)
       break;
     }
 
+    const currentDateTime = new Date().toLocaleString("sv-SE").replace(" ", "T");
+    const timeZoneString = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   // Invoke
 const result = await agent.invoke({
-  messages: [new HumanMessage(prompt)],
+  messages: [  new SystemMessage(
+      `You are a Smart AI Assistant. You work is get and create calendar events.
+       Current dataTime: ${currentDateTime}
+       Current timezone String: ${timeZoneString}
+      `
+    ), new HumanMessage(prompt)],
 },{ configurable: { thread_id: "1" }});
 
 for (const message of result.messages) {
@@ -104,5 +112,3 @@ for (const message of result.messages) {
 }
 rl.close()
 
-
-// pleaes create a meeting with Shehzad his email is shezad@gmail.com. date : Aug 8 2026 and time 5AM timezone:  Asia/Karachi

@@ -7,4 +7,4 @@
 * Implement the tools - connect to google calender - DONE
 * Test the agent - DONE
 * Terminal UI - DONE
-* Add the memory
+* Add the memory - DONE

@@ -1,5 +1,5 @@
 import { ChatGroq } from "@langchain/groq";
-import { HumanMessage } from "@langchain/core/messages";
+// import { HumanMessage } from "@langchain/core/messages";
 
 export const model = new ChatGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -7,8 +7,8 @@ export const model = new ChatGroq({
   temperature: 0,
 });
 
-const message = new HumanMessage("What color is the sky?");
+// const message = new HumanMessage("What color is the sky?");
 
-const res = await model.invoke([message]);
+// const res = await model.invoke([message]);
 
-console.log(res);
+// console.log(res);

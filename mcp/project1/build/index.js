@@ -24,6 +24,37 @@ server.registerTool("get_students", {
         ]
     };
 });
+server.registerResource("students", "students://all", {
+    description: "All student records",
+    mimeType: "application/json",
+}, async (uri) => ({
+    contents: [
+        {
+            uri: uri.href,
+            mimeType: "application/json",
+            text: JSON.stringify(students, null, 2),
+        },
+    ],
+}));
+server.registerPrompt("greeting-example", {
+    title: " Greeting template",
+    description: "A simple greeting prompt template",
+    argsSchema: {
+        name: z.string().describe("Name to include in greeting.")
+    },
+}, async ({ name }) => {
+    return {
+        messages: [
+            {
+                role: "user",
+                content: {
+                    type: "text",
+                    text: `Please greet ${name} in a friendly manner and say hola everytime.`,
+                },
+            }
+        ]
+    };
+});
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);

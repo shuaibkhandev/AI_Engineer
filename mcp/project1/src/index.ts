@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/server";
+import { GetPromptResult, McpServer } from "@modelcontextprotocol/server";
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
 import { z } from "zod";
 import {students} from "./data.js"
@@ -8,6 +8,9 @@ const server = new McpServer({
   name: "welivesoft",
   version: "1.0.0",
 });
+
+
+
 
 
 server.registerTool(
@@ -33,6 +36,46 @@ server.registerTool(
     }
   },
 );
+
+server.registerResource(
+  "students",
+  "students://all",
+  {
+    description: "All student records",
+    mimeType: "application/json",
+  },
+  async (uri) => ({
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: "application/json",
+        text: JSON.stringify(students, null, 2),
+      },
+    ],
+  }),
+);
+
+
+server.registerPrompt("greeting-example", {
+  title:" Greeting template",
+  description: "A simple greeting prompt template",
+  argsSchema: {
+    name : z.string().describe("Name to include in greeting.")
+  },
+}, async ({name}): Promise<GetPromptResult> => {
+  return {
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: `Please greet ${name} in a friendly manner and say hola everytime.`,
+        },
+      }
+    ]
+  }
+    
+  })
 
 
 
